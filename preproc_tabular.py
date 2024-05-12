@@ -1,4 +1,6 @@
 import pandas as pd
+import numpy as np
+import glob
 import torch
 import torch.nn as nn
 from torchtext.data import get_tokenizer
@@ -26,7 +28,7 @@ def modify_ref(ref):
         ref[i] = ref[i].replace('-', '_')
         ref[i] = ref[i][:7] + '_' + ref[i][7:]
         ref[i] = ref[i][:13] + '_' + ref[i][13:]
-        ref[i] = ref[i] + '_'
+        ref[i] = ref[i] + '_*'
         
     return list(ref)
 
@@ -71,3 +73,21 @@ def word_embedding(descriptions):
         
     return tensor_list
     
+def duplicate_row(img_dir, data, descriptions, references):
+    new_ref = list(references)
+    for ref in references:
+        images = glob.glob(img_dir + ref + ".jpg")
+        idx = new_ref.index(ref)
+        new_ref.remove(ref)
+        new_ref = new_ref[:idx] + images + new_ref[idx:]
+
+        times = len(images)-1
+        if times != 0:
+            descriptions = descriptions[:idx] + [descriptions[idx]]*times + descriptions[idx:]
+            new_data = data.values
+            new_data = np.insert(data.values, idx, [new_data[idx]]*times, axis=0)
+            new_data = pd.DataFrame(new_data)
+            new_data.columns = data.columns
+            data = new_data
+            
+    return new_data, descriptions, new_ref

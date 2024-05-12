@@ -2,17 +2,18 @@ from torchvision.io import read_image
 from torch.utils.data import Dataset
 import pandas as pd
 import os 
+import torch
 from torch.utils.data import DataLoader
 from torch.utils.data import random_split
 
 target = [1,2,1,4,2,4,3,5,1,0] #TARGET FAKE
 
 class CustomDataset(Dataset):
-    def __init__(self, annotations_file, img_dir, tabular_data, image_transform=None, target_transform=None):
-        #self.img_labels = pd.read_csv(annotations_file) 
-        self.img_labels = target ###
+    def __init__(self, img_dir, tabular_data, descriptions, target_file, image_transform=None, target_transform=None):
         self.img_dir = img_dir 
         self.tabular = tabular_data
+        self.descriptions = descriptions
+        self.target = target ###
         self.image_transform = image_transform
         self.target_transform = target_transform
 
