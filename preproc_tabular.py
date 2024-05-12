@@ -12,16 +12,12 @@ def get_tabular(path):
     description_embedding = word_embedding(data['DescrizioneArticolo'])
     data = data.drop(['CodiceArticolo', 'CodiceArticoloColore', 'DescrizioneArticolo', 'DescrizioneColore', 'WaveDescription'], axis='columns')
     
-    encoded_labels, _ = pd.factorize(data['Colore'])
-    data['Colore'] = encoded_labels
-    encoded_labels, _ = pd.factorize(data['PianoTaglia'])
-    data['PianoTaglia'] = encoded_labels
-    encoded_labels, _ = pd.factorize(data['WaveCode'])
-    data['WaveCode'] = encoded_labels 
-    encoded_labels, _ = pd.factorize(data['AstronomicalSeasonDescription'])
-    data['AstronomicalSeasonDescription'] = encoded_labels
+    for col in data.columns:
+        encoded_labels, _ = pd.factorize(data[col])
+        encoded_labels = (encoded_labels - encoded_labels.mean())/encoded_labels.std()
+        data[col] = encoded_labels
     
-    return data, references, description_embedding
+    return data, references, description_embedding #data è un dataframe, references lista di stringhe, desc_emb lista di tensori
     
 def modify_ref(ref):
     for i in range(len(ref)):
