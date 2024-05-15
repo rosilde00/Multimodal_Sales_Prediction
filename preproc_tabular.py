@@ -26,19 +26,13 @@ def modify_ref(season, catr, ccol):
         sn = str(sn)
         ca = str(ca)
         cc = str(cc)
-        r = sn + '_' + ca[:3] + '_' + ca[3:8] + '_' + ca[8:] + '_' + cc + '_*'
+        r = sn + '_' + ca[:3] + '_' + ca[3:8] + '_' + ca[8:] + '_' + cc + '_*.jpg'
         new_ref.append(r)
     return new_ref
 
 def get_dictionary(descriptions):
     total_text = ""
     for d in descriptions:
-        
-        ###
-        if isinstance(d, int):
-            d = "Number"
-        ###
-        
         total_text = total_text + " " + d
     
     tokenizer = get_tokenizer('basic_english')
@@ -54,12 +48,6 @@ def word_embedding(descriptions):
 
     tensor_list = []
     for d in descriptions:
-        
-        ###
-        if isinstance(d, int):
-            d = "Number"
-        ###
-        
         tokens = tokenizer(d)
         desc_tensor = torch.zeros(1,10)
         for t in tokens:
@@ -74,18 +62,19 @@ def word_embedding(descriptions):
 def duplicate_row(img_dir, data, descriptions, references):
     new_ref = list(references)
     for ref in references:
-        images = glob.glob(img_dir + ref + ".jpg")
-        idx = new_ref.index(ref)
-        new_ref.remove(ref)
-        new_ref = new_ref[:idx] + images + new_ref[idx:]
+        images = glob.glob(img_dir + ref)
+        if len(images) != 0:
+            idx = new_ref.index(ref)
+            new_ref.remove(ref)
+            new_ref = new_ref[:idx] + images + new_ref[idx:]
 
-        times = len(images)-1
-        if times != 0:
-            descriptions = descriptions[:idx] + [descriptions[idx]]*times + descriptions[idx:]
-            new_data = data.values
-            new_data = np.insert(data.values, idx, [new_data[idx]]*times, axis=0)
-            new_data = pd.DataFrame(new_data)
-            new_data.columns = data.columns
-            data = new_data
+            times = len(images)-1
+            if times != 0:
+                descriptions = descriptions[:idx] + [descriptions[idx]]*times + descriptions[idx:]
+                new_data = data.values
+                new_data = np.insert(data.values, idx, [new_data[idx]]*times, axis=0)
+                new_data = pd.DataFrame(new_data)
+                new_data.columns = data.columns
+                data = new_data
             
     return new_data, descriptions, new_ref
