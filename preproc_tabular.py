@@ -7,10 +7,11 @@ from torchtext.data import get_tokenizer
 
 def get_tabular(path):
     data = pd.read_excel(path)
-    references = data['CodiceArticoloColore']
-    references = modify_ref(references)
-    description_embedding = word_embedding(data['DescrizioneArticolo'])
-    data = data.drop(['CodiceArticolo', 'CodiceArticoloColore', 'DescrizioneArticolo', 'DescrizioneColore', 'WaveDescription'], axis='columns')
+    references = modify_ref(data['Stagione'], data['CodiceArticolo'], data['CodiceColore'])
+    description_embedding = data['Descrizione']
+    data = data.drop(['Stagione', 'CodiceArticolo', 'Descrizione', 'DescrizioneColore', 'AreaDescription', 
+                      'CategoryDescription', 'SectorDescription', 'DepartmentDescription', 'WaveDescription',
+                      'AstronomicalSeasonDescription', 'SalesSeasonBeginDate', 'SalesSeasonEndDate'], axis='columns')
     
     for col in data.columns:
         encoded_labels, _ = pd.factorize(data[col])
@@ -19,14 +20,15 @@ def get_tabular(path):
     
     return data, references, description_embedding #data è un dataframe, references lista di stringhe, desc_emb lista di tensori
     
-def modify_ref(ref):
-    for i in range(len(ref)):
-        ref[i] = ref[i].replace('-', '_')
-        ref[i] = ref[i][:7] + '_' + ref[i][7:]
-        ref[i] = ref[i][:13] + '_' + ref[i][13:]
-        ref[i] = ref[i] + '_*'
-        
-    return list(ref)
+def modify_ref(season, catr, ccol):
+    new_ref = list()
+    for sn, ca, cc in zip(season, catr, ccol):
+        sn = str(sn)
+        ca = str(ca)
+        cc = str(cc)
+        r = sn + '_' + ca[:3] + '_' + ca[3:8] + '_' + ca[8:] + '_' + cc + '_*'
+        new_ref.append(r)
+    return new_ref
 
 def get_dictionary(descriptions):
     total_text = ""
