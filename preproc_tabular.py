@@ -8,14 +8,16 @@ from torchtext.data import get_tokenizer
 def get_tabular(path):
     data = pd.read_excel(path)
     references = modify_ref(data['Stagione'], data['CodiceArticolo'], data['CodiceColore'])
-    description_embedding = data['Descrizione']
+    description= data['Descrizione']
+    description_embedding = word_embedding(description)
     data = data.drop(['Stagione', 'CodiceArticolo', 'Descrizione', 'DescrizioneColore', 'AreaDescription', 
                       'CategoryDescription', 'SectorDescription', 'DepartmentDescription', 'WaveDescription',
                       'AstronomicalSeasonDescription', 'SalesSeasonBeginDate', 'SalesSeasonEndDate'], axis='columns')
     
     for col in data.columns:
         encoded_labels, _ = pd.factorize(data[col])
-        encoded_labels = (encoded_labels - encoded_labels.mean())/encoded_labels.std()
+        if encoded_labels.std() != 0:
+            encoded_labels = (encoded_labels - encoded_labels.mean())/encoded_labels.std()
         data[col] = encoded_labels
     
     return data, references, description_embedding #data è un dataframe, references lista di stringhe, desc_emb lista di tensori
