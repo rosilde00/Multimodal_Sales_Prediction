@@ -3,7 +3,7 @@ from torch.utils.data import Dataset
 import torch
 from torch.utils.data import DataLoader
 from torch.utils.data import random_split
-from torchvision import transforms
+from torchvision.transforms import v2
 from torchvision.io import ImageReadMode
 
 target = [1,2,1,4,2,4,3,5,1,0] #TARGET FAKE
@@ -24,7 +24,6 @@ class CustomDataset(Dataset):
     
     def __getitem__(self, idx):
         image = read_image(self.img_ref[idx], ImageReadMode.RGB)
-        image = image.to(torch.float32)
         tabular_row = torch.from_numpy(self.tabular.iloc[idx].values)
         description = self.descriptions[idx]
         #label = self.target.iloc[idx, 1] QUANDO CI SARA IL TARGET
@@ -34,11 +33,13 @@ class CustomDataset(Dataset):
             image = self.transform(image)
         if self.target_transform:
             label = self.target_transform(label)
-        return image, tabular_row, description, label
+        return image, tabular_row, label ###Tolta la descrizione
 
 def getDataset(references, tabular_data, descriptions, target_file):
-    transform_img = transforms.Compose([
-        transforms.Normalize(IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD),
+    transform_img = v2.Compose([
+        v2.ToDtype(torch.float32, scale=True),
+        v2.Normalize(IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD)
+        
     ])
     
     transform_target = None ######
@@ -46,7 +47,7 @@ def getDataset(references, tabular_data, descriptions, target_file):
     dataset = CustomDataset(references, tabular_data, descriptions, target_file, transform_img, transform_target)
     
     splitted_dataset = random_split(dataset, [0.6, 0.3, 0.1])
-    train_dataloader = DataLoader(splitted_dataset[0], batch_size=64)
-    validation_dataloader = DataLoader(splitted_dataset[1], batch_size=64)
-    test_dataloader = DataLoader(splitted_dataset[2], batch_size=64)
+    train_dataloader = DataLoader(splitted_dataset[0], batch_size=1)
+    validation_dataloader = DataLoader(splitted_dataset[1], batch_size=1)
+    test_dataloader = DataLoader(splitted_dataset[2], batch_size=1)
     return train_dataloader, validation_dataloader, test_dataloader
