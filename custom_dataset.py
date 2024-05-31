@@ -24,7 +24,7 @@ class CustomDataset(Dataset):
     
     def __getitem__(self, idx):
         image = read_image(self.img_ref[idx], ImageReadMode.RGB)
-        tabular_row = torch.from_numpy(self.tabular.iloc[idx].values)
+        tabular_row = torch.from_numpy(self.tabular.iloc[idx].values).float()
         description = self.descriptions[idx]
         #label = self.target.iloc[idx, 1] QUANDO CI SARA IL TARGET
         label = target[idx]

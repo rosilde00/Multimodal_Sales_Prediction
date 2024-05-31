@@ -1,2 +1,4 @@
-Continuare con risolvere errori addestramento rete
+Guardare i warning
+Aggiungere early stopping
+L'architettura sarà probabilmente da cambiare
 Per le descrizioni bisognerà fare padding, se no si lamenta perchè non riesce a creare il dataloader

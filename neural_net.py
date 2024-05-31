@@ -6,15 +6,23 @@ from torchvision.models.vision_transformer import ViT_B_16_Weights
 class Network (nn.Module):
     def __init__(self):
         super().__init__()
-        self.vit = vit_b_16(ViT_B_16_Weights.IMAGENET1K_V1)
+        self.vit = nn.Sequential(
+            vit_b_16(ViT_B_16_Weights.IMAGENET1K_V1),
+            nn.Linear(1000, 512),
+            nn.ReLU(),
+            nn.Linear(512, 256),
+            nn.ReLU(),
+            nn.Linear(256, 50),
+            nn.ReLU(),
+            nn.Linear(50, 6),
+            nn.ReLU(),
+        ) 
         self.feedforward = nn.Sequential (
             nn.Linear(9, 6),
             nn.ReLU(),
-            nn.Linear(6, 3),
-            nn.ReLU()
         )
         self.final = nn.Sequential(
-            nn.Linear(13, 10),
+            nn.Linear(12, 10),
             nn.ReLU(),
             nn.Linear(10, 5),
             nn.ReLU(),
@@ -25,7 +33,7 @@ class Network (nn.Module):
     def forward(self, image, tab):
         emb_image = self.vit(image)
         emb_tab = self.feedforward(tab)
-        result = self.final(torch.cat((emb_image, emb_tab), 0))
+        result = self.final(torch.cat((emb_image, emb_tab), 1))
         return result
     
 def create_model():
@@ -36,8 +44,7 @@ def train_loop(dataloader, model, loss_fn, optimizer, batch_size):
     model.train() #setta il modello in modalità train: i pesi ora si modificano
     for batch, (img, tab, y) in enumerate(dataloader): #numero batch e coppia attributi-target. Quando si crea il dataloader dal dataset si dice già il mini batch
         pred = model(img, tab)
-        loss = loss_fn(pred, y)
-
+        loss = loss_fn(pred, y.float())
         # Backpropagation
         loss.backward()
         optimizer.step()

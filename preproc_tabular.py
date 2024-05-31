@@ -25,9 +25,7 @@ def get_tabular(path):
 def modify_ref(season, catr, ccol):
     new_ref = list()
     for sn, ca, cc in zip(season, catr, ccol):
-        sn = str(sn)
-        ca = str(ca)
-        cc = str(cc)
+        sn, ca, cc = str(sn), str(ca), str(cc)
         r = sn + '_' + ca[:3] + '_' + ca[3:8] + '_' + ca[8:] + '_' + cc + '_*.jpg'
         new_ref.append(r)
     return new_ref
