@@ -20,10 +20,15 @@ batch_size = 1
 epochs = 2
 loss_fn = nn.MSELoss()
 optimizer = torch.optim.SGD(modello.parameters(), lr=learning_rate) 
+early_stop = 3
 
-
+stable_loss = 0
+prec_loss = 20000
 for t in range(epochs):
     print(f"Epoch {t+1}\n-------------------------------")
     neural_net.train_loop(train, modello, loss_fn, optimizer, 1)
-    neural_net.validation_loop(val, modello, loss_fn)
+    val_loss = neural_net.validation_loop(val, modello, loss_fn)
+    stop, stable_loss = neural_net.early_stopping(val_loss, prec_loss, stable_loss, early_stop)
+    if stop:
+        break
 print("Done!")

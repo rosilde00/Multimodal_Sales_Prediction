@@ -66,3 +66,15 @@ def validation_loop(dataloader, model, loss_fn):
 
     val_loss /= num_batches
     print(f"Validation Error: \n Avg loss: {val_loss:>8f} \n")
+    return val_loss
+
+def early_stopping (actual, previuos, n_epoch, limit):
+    stop = False
+    if actual < previuos:
+        new_nepoch = 0
+    else:
+        new_nepoch = n_epoch + 1
+        if new_nepoch == limit:
+            stop = True
+    return stop, new_nepoch
+        
