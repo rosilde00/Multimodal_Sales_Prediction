@@ -4,12 +4,13 @@ import glob
 import torch
 import torch.nn as nn
 from torchtext.data import get_tokenizer
+import re
 
 def get_tabular(path):
     data = pd.read_excel(path)
     references = modify_ref(data['Stagione'], data['CodiceArticolo'], data['CodiceColore'])
-    description= data['Descrizione']
-    description_embedding = word_embedding(description)
+    description = data['Descrizione'].to_list()
+    description_embedding, max_len = word_embedding(description)
     data = data.drop(['Stagione', 'CodiceArticolo', 'Descrizione', 'DescrizioneColore', 'AreaDescription', 
                       'CategoryDescription', 'SectorDescription', 'DepartmentDescription', 'WaveDescription',
                       'AstronomicalSeasonDescription', 'SalesSeasonBeginDate', 'SalesSeasonEndDate'], axis='columns')
@@ -20,7 +21,7 @@ def get_tabular(path):
             encoded_labels = (encoded_labels - encoded_labels.mean())/encoded_labels.std()
         data[col] = encoded_labels
     
-    return data, references, description_embedding #data è un dataframe, references lista di stringhe, desc_emb lista di tensori
+    return data, references, description_embedding, max_len #data è un dataframe, references lista di stringhe, desc_emb lista di tensori
     
 def modify_ref(season, catr, ccol):
     new_ref = list()
@@ -42,9 +43,22 @@ def get_dictionary(descriptions):
     return dictionary
 
 def word_embedding(descriptions):
+    words = []
+    for d in descriptions:
+        split_d = re.findall(r"\w+|[^\w\s]", d, re.UNICODE)
+        words.append(split_d)
+
+    lengths = [len(w) for w in words]
+    max_len = max(lengths)
+    
+    for i in range(0, len(descriptions)):
+        padding_len = max_len - len(words[i])
+        descriptions[i] = ''.join([descriptions[i], ' <pad>'*padding_len])
+        descriptions[i] ='<start> ' + descriptions[i] + ' <end>'
+    
     dictionary = get_dictionary(descriptions)
     tokenizer = get_tokenizer('basic_english')
-    embed_layer = nn.Embedding(len(dictionary), 10)  
+    embed_layer = nn.Embedding(len(dictionary), 10) 
 
     tensor_list = []
     for d in descriptions:
@@ -57,7 +71,7 @@ def word_embedding(descriptions):
         desc_tensor = desc_tensor[1:]
         tensor_list.append(desc_tensor)
         
-    return tensor_list
+    return tensor_list, max_len+2
     
 def duplicate_row(img_dir, data, descriptions, references):
     new_ref = list(references)
