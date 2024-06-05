@@ -5,12 +5,12 @@ import torch
 import torch.nn as nn
 from torchtext.data import get_tokenizer
 import re
+from transformers import AutoTokenizer, AutoModel
 
-def get_tabular(path):
+def get_data(path):
     data = pd.read_excel(path)
     references = modify_ref(data['Stagione'], data['CodiceArticolo'], data['CodiceColore'])
     description = data['Descrizione'].to_list()
-    description_embedding, max_len = word_embedding(description)
     data = data.drop(['Stagione', 'CodiceArticolo', 'Descrizione', 'DescrizioneColore', 'AreaDescription', 
                       'CategoryDescription', 'SectorDescription', 'DepartmentDescription', 'WaveDescription',
                       'AstronomicalSeasonDescription', 'SalesSeasonBeginDate', 'SalesSeasonEndDate'], axis='columns')
@@ -21,59 +21,9 @@ def get_tabular(path):
             encoded_labels = (encoded_labels - encoded_labels.mean())/encoded_labels.std()
         data[col] = encoded_labels
     
-    return data, references, description_embedding, max_len #data è un dataframe, references lista di stringhe, desc_emb lista di tensori
-    
-def modify_ref(season, catr, ccol):
-    new_ref = list()
-    for sn, ca, cc in zip(season, catr, ccol):
-        sn, ca, cc = str(sn), str(ca), str(cc)
-        r = sn + '_' + ca[:3] + '_' + ca[3:8] + '_' + ca[8:] + '_' + cc + '_*.jpg'
-        new_ref.append(r)
-    return new_ref
+    return data, references, description #data è un dataframe, references lista di stringhe, desc_emb lista di tensori
 
-def get_dictionary(descriptions):
-    total_text = ""
-    for d in descriptions:
-        total_text = total_text + " " + d
-    
-    tokenizer = get_tokenizer('basic_english')
-    tokens = tokenizer(total_text)
-    tokens_set = set(tokens)
-    dictionary = {word: j for j, word in enumerate(tokens_set)}
-    return dictionary
-
-def word_embedding(descriptions):
-    words = []
-    for d in descriptions:
-        split_d = re.findall(r"\w+|[^\w\s]", d, re.UNICODE)
-        words.append(split_d)
-
-    lengths = [len(w) for w in words]
-    max_len = max(lengths)
-    
-    for i in range(0, len(descriptions)):
-        padding_len = max_len - len(words[i])
-        descriptions[i] = ''.join([descriptions[i], ' <pad>'*padding_len])
-        descriptions[i] ='<start> ' + descriptions[i] + ' <end>'
-    
-    dictionary = get_dictionary(descriptions)
-    tokenizer = get_tokenizer('basic_english')
-    embed_layer = nn.Embedding(len(dictionary), 10) 
-
-    tensor_list = []
-    for d in descriptions:
-        tokens = tokenizer(d)
-        desc_tensor = torch.zeros(1,10)
-        for t in tokens:
-            lookup_tensor = torch.tensor([dictionary[t]], dtype=torch.long)
-            embed = embed_layer(lookup_tensor)
-            desc_tensor = torch.cat((desc_tensor, embed), 0)
-        desc_tensor = desc_tensor[1:]
-        tensor_list.append(desc_tensor)
-        
-    return tensor_list, max_len+2
-    
-def duplicate_row(img_dir, data, descriptions, references):
+def duplicate_row(img_dir, data, references, descriptions):
     new_ref = list(references)
     for ref in references:
         images = glob.glob(img_dir + ref)
@@ -92,3 +42,23 @@ def duplicate_row(img_dir, data, descriptions, references):
                 data = new_data
             
     return new_data, descriptions, new_ref
+
+    
+def modify_ref(season, catr, ccol):
+    new_ref = list()
+    for sn, ca, cc in zip(season, catr, ccol):
+        sn, ca, cc = str(sn), str(ca), str(cc)
+        r = sn + '_' + ca[:3] + '_' + ca[3:8] + '_' + ca[8:] + '_' + cc + '_*.jpg'
+        new_ref.append(r)
+    return new_ref
+
+def word_embedding(descriptions):
+    tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
+    tokenized_desc = tokenizer(descriptions, padding = True, truncation = False, return_tensors="pt")
+    return tokenized_desc
+    
+def get_tabular(img_dir, tabular_path):
+    data, references, descriptions = get_data(tabular_path)
+    newdata, newdescription, newreferences = duplicate_row(img_dir, data, references, descriptions)
+    tokenized_desc = word_embedding(newdescription)
+    return newdata, tokenized_desc, newreferences
