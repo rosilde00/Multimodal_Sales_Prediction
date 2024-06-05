@@ -2,12 +2,11 @@ import torch
 from torch import nn
 from torchvision.models.vision_transformer import vit_b_16
 from torchvision.models.vision_transformer import ViT_B_16_Weights
+from transformers import AutoModel
 
 class Network (nn.Module):
-    def __init__(self, len_desc, len_tab):
+    def __init__(self):
         super().__init__()
-        half = int(len_tab/2)
-        final_len = half*2
         self.vit = nn.Sequential(
             vit_b_16(ViT_B_16_Weights.IMAGENET1K_V1),
             nn.Linear(1000, 512),
@@ -16,36 +15,50 @@ class Network (nn.Module):
             nn.ReLU(),
             nn.Linear(256, 100),
             nn.ReLU(),
-            nn.Linear(100, len_tab),
+            nn.Linear(100, 50),
             nn.ReLU(),
-            nn.Linear(len_tab, half),
+            nn.Linear(50, 9),
             nn.ReLU(),
         ) 
-        self.feedforward = nn.Sequential (
-            nn.Linear(len_tab, half),
+        self.tabular = nn.Sequential (
+            nn.Linear(9, 9),
+            nn.ReLU(),
+        )
+        self.bert = AutoModel.from_pretrained("distilbert-base-uncased")
+        self.descriptions = nn.Sequential(
+            nn.Linear(768, 300),
+            nn.ReLU(),
+            nn.Linear(300, 100),
+            nn.ReLU(),
+            nn.Linear(100, 50),
+            nn.ReLU(),
+            nn.Linear(50, 9),
             nn.ReLU(),
         )
         self.final = nn.Sequential(
-            nn.Linear(final_len, 5),
+            nn.Linear(27, 5),
             nn.ReLU(),
             nn.Linear(5, 1),
             nn.ReLU()
         )
         
-    def forward(self, image, tab):
+    def forward(self, image, tab, desc):
         emb_image = self.vit(image)
-        emb_tab = self.feedforward(tab)
-        result = self.final(torch.cat((emb_image, emb_tab), 1))
+        emb_tab = self.tabular(tab)
+        bert_res = self.bert(**desc)
+        last_hidden = bert_res.last_hidden_state[:,0,:]
+        emb_desc = self.descriptions(last_hidden)
+        result = self.final(torch.cat((emb_image, emb_tab, emb_desc), 1))
         return result
     
-def create_model(len_desc, len_tab):
-    return Network(len_desc, len_tab)
+def create_model():
+    return Network()
 
 def train_loop(dataloader, model, loss_fn, optimizer, batch_size):
     size = len(dataloader.dataset) #quanti elementi nel dataset
     model.train() #setta il modello in modalità train: i pesi ora si modificano
-    for batch, (img, tab, y) in enumerate(dataloader): #numero batch e coppia attributi-target. Quando si crea il dataloader dal dataset si dice già il mini batch
-        pred = model(img, tab)
+    for batch, (img, tab, desc, y) in enumerate(dataloader): #numero batch e coppia attributi-target. Quando si crea il dataloader dal dataset si dice già il mini batch
+        pred = model(img, tab, desc)
         loss = loss_fn(pred, y.float())
         # Backpropagation
         loss.backward()
@@ -62,8 +75,8 @@ def validation_loop(dataloader, model, loss_fn):
     val_loss = 0
 
     with torch.no_grad(): #si assicura che il gradiente qui non venga calcolato
-        for img, tab, y in dataloader:
-            pred = model(img, tab)
+        for img, tab, desc, y in dataloader:
+            pred = model(img, tab, desc)
             val_loss += loss_fn(pred, y).item()
 
     val_loss /= num_batches

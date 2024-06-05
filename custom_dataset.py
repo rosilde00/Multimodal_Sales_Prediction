@@ -6,7 +6,7 @@ from torch.utils.data import random_split
 from torchvision.transforms import v2
 from torchvision.io import ImageReadMode
 
-target = [1,2,1,4,2,4,3,5,1,0] #TARGET FAKE
+target = [1,2,1,4,2,4,3,5,1,0]
 IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406) #presi da timm
 IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
 
@@ -25,7 +25,7 @@ class CustomDataset(Dataset):
     def __getitem__(self, idx):
         image = read_image(self.img_ref[idx], ImageReadMode.RGB)
         tabular_row = torch.from_numpy(self.tabular.iloc[idx].values).float()
-        description = self.descriptions[idx]
+        description = self.descriptions
         #label = self.target.iloc[idx, 1] QUANDO CI SARA IL TARGET
         label = target[idx]
         
@@ -33,13 +33,12 @@ class CustomDataset(Dataset):
             image = self.transform(image)
         if self.target_transform:
             label = self.target_transform(label)
-        return image, tabular_row, label ###Tolta la descrizione
+        return image, tabular_row, description, label ###Tolta la descrizione
 
 def getDataset(references, tabular_data, descriptions, target_file):
     transform_img = v2.Compose([
         v2.ToDtype(torch.float32, scale=True),
         v2.Normalize(IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD)
-        
     ])
     
     transform_target = None ######

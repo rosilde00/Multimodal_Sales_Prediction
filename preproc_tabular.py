@@ -1,11 +1,7 @@
 import pandas as pd
 import numpy as np
 import glob
-import torch
-import torch.nn as nn
-from torchtext.data import get_tokenizer
-import re
-from transformers import AutoTokenizer, AutoModel
+from transformers import AutoTokenizer
 
 def get_data(path):
     data = pd.read_excel(path)
@@ -55,7 +51,7 @@ def modify_ref(season, catr, ccol):
 def word_embedding(descriptions):
     tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
     tokenized_desc = tokenizer(descriptions, padding = True, truncation = False, return_tensors="pt")
-    return tokenized_desc
+    return tokenized_desc.data
     
 def get_tabular(img_dir, tabular_path):
     data, references, descriptions = get_data(tabular_path)
