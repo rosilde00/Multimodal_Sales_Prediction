@@ -5,15 +5,18 @@ import torch
 from torch import nn
 
 
+IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406) #presi da timm
+IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
+
 target = [1,2,1,4,2,4,3,5,1,0] #TARGET FAKE
 img_path = 'D:\\ORS\\Data\\ResizedImages\\'
 tab_path = 'D:\\ORS\\Data\\prova.xlsx'
 target_path = 'ciao'
 
-data, references, descriptions, len_desc = get_tabular(img_path, tab_path)
+data, descriptions, references = get_tabular(img_path, tab_path)
 train, val, test = getDataset(references, data, descriptions, target_path)
- 
-modello = neural_net.create_model(len_desc, len(data.columns))
+
+modello = neural_net.create_model()
 
 learning_rate = 1e-3
 batch_size = 1

@@ -7,6 +7,7 @@ def get_data(path):
     data = pd.read_excel(path)
     references = modify_ref(data['Stagione'], data['CodiceArticolo'], data['CodiceColore'])
     description = data['Descrizione'].to_list()
+    description = list(map(lambda d: d.lower(), description))
     data = data.drop(['Stagione', 'CodiceArticolo', 'Descrizione', 'DescrizioneColore', 'AreaDescription', 
                       'CategoryDescription', 'SectorDescription', 'DepartmentDescription', 'WaveDescription',
                       'AstronomicalSeasonDescription', 'SalesSeasonBeginDate', 'SalesSeasonEndDate'], axis='columns')
@@ -48,9 +49,9 @@ def modify_ref(season, catr, ccol):
         new_ref.append(r)
     return new_ref
 
-def word_embedding(descriptions):
-    tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
-    tokenized_desc = tokenizer(descriptions, padding = True, truncation = False, return_tensors="pt")
+def word_embedding(description):
+    tokenizer = AutoTokenizer.from_pretrained("distilbert-base-multilingual-cased")
+    tokenized_desc = tokenizer(description, padding = True, truncation = True, add_special_tokens = True, return_tensors="pt")
     return tokenized_desc.data
     
 def get_tabular(img_dir, tabular_path):

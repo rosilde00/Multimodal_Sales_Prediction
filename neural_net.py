@@ -24,7 +24,7 @@ class Network (nn.Module):
             nn.Linear(9, 9),
             nn.ReLU(),
         )
-        self.bert = AutoModel.from_pretrained("distilbert-base-uncased")
+        self.bert = AutoModel.from_pretrained("distilbert-base-multilingual-cased")
         self.descriptions = nn.Sequential(
             nn.Linear(768, 300),
             nn.ReLU(),
@@ -59,7 +59,7 @@ def train_loop(dataloader, model, loss_fn, optimizer, batch_size):
     model.train() #setta il modello in modalità train: i pesi ora si modificano
     for batch, (img, tab, desc, y) in enumerate(dataloader): #numero batch e coppia attributi-target. Quando si crea il dataloader dal dataset si dice già il mini batch
         pred = model(img, tab, desc)
-        loss = loss_fn(pred, y.float())
+        loss = loss_fn(pred.squeeze(), y.float())
         # Backpropagation
         loss.backward()
         optimizer.step()
@@ -77,7 +77,7 @@ def validation_loop(dataloader, model, loss_fn):
     with torch.no_grad(): #si assicura che il gradiente qui non venga calcolato
         for img, tab, desc, y in dataloader:
             pred = model(img, tab, desc)
-            val_loss += loss_fn(pred, y).item()
+            val_loss += loss_fn(pred.squeeze(), y.float()).item()
 
     val_loss /= num_batches
     print(f"Validation Error: \n Avg loss: {val_loss:>8f} \n")

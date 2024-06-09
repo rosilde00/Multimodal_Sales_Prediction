@@ -25,7 +25,11 @@ class CustomDataset(Dataset):
     def __getitem__(self, idx):
         image = read_image(self.img_ref[idx], ImageReadMode.RGB)
         tabular_row = torch.from_numpy(self.tabular.iloc[idx].values).float()
-        description = self.descriptions
+        description = dict()
+        token_tensor = self.descriptions.get('input_ids')
+        description['input_ids'] = token_tensor[idx]
+        mask_tensor = self.descriptions.get('attention_mask')
+        description['attention_mask'] = mask_tensor[idx]
         #label = self.target.iloc[idx, 1] QUANDO CI SARA IL TARGET
         label = target[idx]
         
