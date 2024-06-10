@@ -4,7 +4,7 @@ import neural_net
 import torch
 from torch import nn
 
-
+#ciao
 IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406) #presi da timm
 IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
 
