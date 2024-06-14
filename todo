@@ -1,1 +1,18 @@
-The size of tensor a (13) must match the size of tensor b (10) at non-singleton dimension 2
+sku stock kepping unit singola unità di stok minimo livello di dettaglio taglia- colore - articolo
+livello articolo colore colorwave maglietta rossa
+articolo maglietta
+
+taglie diverse a seconda della categoria (area)
+gerarchia prodotto: reparto e poi livelli superiori settore categoria e area
+
+ricondizionati e non, c'è un flag togliere ricondizionati
+
+wave = serie (halloween, natale) non inviano tutto insieme, ad esempio prima primavera, intermedia ecc...
+anche le wave sono diverse ogni anno
+
+allocation map negozio - vestiti e taglia cosa devo allocare
+
+entry price distingue se è a prezzo originale o no
+
+net
+vendite / numero giorni in vendita target
