@@ -1,6 +1,6 @@
-from preproc_tabular import get_tabular
-from custom_dataset import getDataset
-import neural_net
+from sales_prediction.preproc_tabular import get_tabular
+from sales_prediction.dataset_sales import getDataset
+import sales_prediction.sales_prediction as sales_prediction
 import torch
 from torch import nn
 
@@ -16,7 +16,7 @@ target_path = 'ciao'
 data, descriptions, references = get_tabular(img_path, tab_path)
 train, val, test = getDataset(references, data, descriptions, target_path)
 
-modello = neural_net.create_model()
+modello = sales_prediction.create_model()
 
 learning_rate = 1e-3
 batch_size = 1
@@ -29,9 +29,9 @@ stable_loss = 0
 prec_loss = 20000
 for t in range(epochs):
     print(f"Epoch {t+1}\n-------------------------------")
-    neural_net.train_loop(train, modello, loss_fn, optimizer, 1)
-    val_loss = neural_net.validation_loop(val, modello, loss_fn)
-    stop, stable_loss = neural_net.early_stopping(val_loss, prec_loss, stable_loss, early_stop)
+    sales_prediction.train_loop(train, modello, loss_fn, optimizer, 1)
+    val_loss = sales_prediction.validation_loop(val, modello, loss_fn)
+    stop, stable_loss = sales_prediction.early_stopping(val_loss, prec_loss, stable_loss, early_stop)
     if stop:
         break
 print("Done!")

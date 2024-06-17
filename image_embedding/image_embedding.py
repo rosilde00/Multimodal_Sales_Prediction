@@ -1,0 +1,4 @@
+from torchvision.models.vision_transformer import vit_b_16
+from torchvision.models.vision_transformer import ViT_B_16_Weights
+
+vit_b_16(ViT_B_16_Weights.IMAGENET1K_V1)

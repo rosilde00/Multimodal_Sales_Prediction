@@ -1,14 +1,11 @@
 import torch
 from torch import nn
-from torchvision.models.vision_transformer import vit_b_16
-from torchvision.models.vision_transformer import ViT_B_16_Weights
 from transformers import AutoModel
 
 class Network (nn.Module):
     def __init__(self):
         super().__init__()
-        self.vit = nn.Sequential(
-            vit_b_16(ViT_B_16_Weights.IMAGENET1K_V1),
+        self.img = nn.Sequential(
             nn.Linear(1000, 512),
             nn.ReLU(),
             nn.Linear(512, 256),
@@ -17,11 +14,11 @@ class Network (nn.Module):
             nn.ReLU(),
             nn.Linear(100, 50),
             nn.ReLU(),
-            nn.Linear(50, 9),
+            nn.Linear(50, 12),
             nn.ReLU(),
         ) 
         self.tabular = nn.Sequential (
-            nn.Linear(9, 9),
+            nn.Linear(12, 12),
             nn.ReLU(),
         )
         self.bert = AutoModel.from_pretrained("distilbert-base-multilingual-cased")
@@ -32,18 +29,18 @@ class Network (nn.Module):
             nn.ReLU(),
             nn.Linear(100, 50),
             nn.ReLU(),
-            nn.Linear(50, 9),
+            nn.Linear(50, 12),
             nn.ReLU(),
         )
         self.final = nn.Sequential(
-            nn.Linear(27, 5),
+            nn.Linear(36, 10),
             nn.ReLU(),
-            nn.Linear(5, 1),
+            nn.Linear(10, 1),
             nn.ReLU()
         )
         
     def forward(self, image, tab, desc):
-        emb_image = self.vit(image)
+        emb_image = self.img(image)
         emb_tab = self.tabular(tab)
         bert_res = self.bert(**desc)
         last_hidden = bert_res.last_hidden_state[:,0,:]

@@ -31,14 +31,14 @@ sales = pd.read_csv(path_sales, names=['LocationId', 'ProductCode', 'CodiceColor
 
 ref_images = img_ref(anagrafica['Stagione'], anagrafica['CodiceArticolo'], anagrafica['CodiceColore'])
 ref_join = join_ref(anagrafica['Stagione'], anagrafica['CodiceArticolo'])
-anagrafica = anagrafica.drop(['Stagione', 'CodiceArticolo', 'Descrizione', 'DescrizioneColore', 'AreaDescription', 
+anagrafica = anagrafica.drop(['Stagione', 'CodiceArticolo', 'DescrizioneColore', 'AreaDescription', 
                       'CategoryDescription', 'SectorDescription', 'DepartmentDescription', 'WaveDescription',
                       'AstronomicalSeasonDescription', 'SalesSeasonBeginDate', 'SalesSeasonEndDate'], axis='columns')
 
 anagrafica['ProductCode'] = ref_join
 anagrafica['IdProdotto'] = ref_images
 
-sales = sales.drop(['NetValue'], axis='columns')
+sales = sales.drop(['NetValue', 'Year'], axis='columns')
 new_dataset = anagrafica.merge(sales, on=['ProductCode', 'CodiceColore'], how='inner')
 new_dataset = new_dataset.drop(['ProductCode'], axis='columns')
 new_dataset.to_excel(path_dest, index=False)
