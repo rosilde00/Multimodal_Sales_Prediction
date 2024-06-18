@@ -16,3 +16,11 @@ entry price distingue se è a prezzo originale o no
 
 net
 vendite / numero giorni in vendita target
+
+
+step di processing dei dati: 
+- aggregare le vendite dei prodotti con granularità stagione per emb immagini. Eliminare 19, 20, 21, 221 perchè non ci sono i dati per quei prodotti
+- join di anagrafica e vendite settimanali per pred vendite
+- replicare gli id delle vendite aggregate per le tre modalità dell'immagine. Prendere le immagini delle sales -> final
+- replicare gli id delle vendite settimanali (sales pred) per le tre modalità dell'immagine -> final
+- fare la resize delle immagini per il vit

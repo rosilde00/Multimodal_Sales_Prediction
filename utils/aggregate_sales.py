@@ -15,6 +15,6 @@ for idx in range(0, len(data_aggregate.values)):
     data_aggregate.iloc[idx,0] = ref
 
 data_aggregate = data_aggregate.drop(columns=['colorid'], axis='columns')
-mask = ~data_aggregate ['prodcode'].str.startswith(('19', '20', '21')) #perchè le img sono del 22 e 23
+mask = ~data_aggregate ['prodcode'].str.startswith(('19', '20', '21', '221')) #perchè le img sono del 222 e 23
 data_aggregate = data_aggregate[mask]
 data_aggregate.to_excel(dest_path, index=False)

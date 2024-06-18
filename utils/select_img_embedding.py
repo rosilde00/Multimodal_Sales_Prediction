@@ -5,7 +5,7 @@ import shutil
 #seleziona le immagini nell'aggregated e mette gli id giusti
 path = 'C:\\ORS\\Data\\aggregated_sales.xlsx' 
 dest_path = 'C:\\ORS\\Data\\aggregated_sales_final.xlsx'
-img_path = 'C:\\ORS\\Data\\222_1_di_2\\222_1_di_2\\'
+img_path = 'C:\\ORS\\Data\\AllImages\\'
 img_dest = 'C:\\ORS\\Data\\Images\\'
 
 data = pd.read_excel(path)
@@ -32,4 +32,5 @@ for ref in list(references):
             data = new_data
             
 data['prodcode'] = new_ref
+#RICORDARSI DI METTERE DI ELIMINARE QUELLE CHE ENDWITH *.JPG
 data.to_excel(dest_path, index=False)
