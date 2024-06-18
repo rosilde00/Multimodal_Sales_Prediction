@@ -32,5 +32,6 @@ for ref in list(references):
             data = new_data
             
 data['prodcode'] = new_ref
-#RICORDARSI DI METTERE DI ELIMINARE QUELLE CHE ENDWITH *.JPG
+mask = ~data['prodcode'].str.endswith(('*.jpg'))
+data = data[mask]
 data.to_excel(dest_path, index=False)
