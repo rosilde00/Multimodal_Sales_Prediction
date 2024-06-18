@@ -1,5 +1,5 @@
 import pandas as pd
-
+#fa la join fra anagrafica e sales settimanali
 def img_ref(season, catr, ccol):
     new_ref = list()
     for sn, ca, cc in zip(season, catr, ccol):
@@ -17,13 +17,7 @@ def join_ref(season, catr):
     return new_ref
 
 path_anagrafica = 'C:\\ORS\\Data\\Anagrafica.xlsx' 
-#Stagione, CodiceArticolo, Descrizione, CodiceColore, DescrizioneColore, PianoTaglia, AreaCode,	AreaDescription, CategoryCode
-#CategoryDescription, SectorCode, SectorDescription, DepartmentCode, DepartmentDescription, WaveCode, WaveDescription, AstronomicalSeasonExternalID	
-#AstronomicalSeasonDescription,	SalesSeasonDescription,	SalesSeasonBeginDate, SalesSeasonEndDate
-
 path_sales = 'C:\\ORS\\Data\\sales.csv'
-#LocationId, ProductCode, ColorCode, Year, Week, Quantity, NetValue
-
 path_dest = 'C:\\ORS\\Data\\sales_anagrafica.xlsx'
 
 anagrafica = pd.read_excel(path_anagrafica)

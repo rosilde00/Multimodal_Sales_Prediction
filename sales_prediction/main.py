@@ -4,13 +4,12 @@ import sales_prediction.sales_prediction as sales_prediction
 import torch
 from torch import nn
 
-#ciao
+
 IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406) #presi da timm
 IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
 
-target = [1,2,1,4,2,4,3,5,1,0] #TARGET FAKE
 img_path = 'D:\\ORS\\Data\\ResizedImages\\'
-tab_path = 'D:\\ORS\\Data\\prova.xlsx'
+tab_path = 'D:\\ORS\\Data\\sales_anagrafica_final.xlxs'
 target_path = 'ciao'
 
 data, descriptions, references = get_tabular(img_path, tab_path)

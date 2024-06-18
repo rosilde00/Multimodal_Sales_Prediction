@@ -1,12 +1,13 @@
 import pandas as pd
 
+#crea i dati aggregati
 path = 'C:\\ORS\\Data\\sales.csv'
 dest_path = 'C:\\ORS\\Data\\aggregated_sales.xlsx'
+
 data = pd.read_csv(path, names=['locid', 'prodcode', 'colorid', 'year', 'week', 'qty', 'netvalue'], header=None, sep=';')
 data = data.drop(columns=['locid', 'year', 'week', 'netvalue'], axis=1)
 
 data_aggregate = data.groupby(['prodcode', 'colorid'], as_index=False).sum()
-
 
 for idx in range(0, len(data_aggregate.values)):
     ref = data_aggregate.iloc[idx].values[0]
@@ -14,4 +15,6 @@ for idx in range(0, len(data_aggregate.values)):
     data_aggregate.iloc[idx,0] = ref
 
 data_aggregate = data_aggregate.drop(columns=['colorid'], axis='columns')
+mask = ~data_aggregate ['prodcode'].str.startswith(('19', '20', '21')) #perchè le img sono del 22 e 23
+data_aggregate = data_aggregate[mask]
 data_aggregate.to_excel(dest_path, index=False)

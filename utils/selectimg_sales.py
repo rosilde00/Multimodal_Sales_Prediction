@@ -2,7 +2,7 @@ import glob
 import pandas as pd
 import numpy as np
 
-img_path = 'C:\\ORS\\Data\\ResizedImages\\'
+img_path = 'C:\\ORS\\Data\\Images\\'
 data_path = 'C:\\ORS\\Data\\sales_anagrafica.xlsx'
 dest_path = 'C:\\ORS\\Data\\sales_anagrafica_final.xlsx'
 
@@ -12,6 +12,8 @@ new_ref = list(references)
 for ref in list(references):
     images = glob.glob(img_path + ref)
     if len(images) != 0:
+        images = list(map(lambda img: img[len(img_path):], images))
+        
         idx = new_ref.index(ref)
         new_ref.remove(ref)
         new_ref = new_ref[:idx] + images + new_ref[idx:]
