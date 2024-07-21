@@ -15,7 +15,7 @@ def get_data(path):
         encoded_labels, _ = pd.factorize(data[col])
         data[col] = encoded_labels
     
-    for col in data.columns: 
+    for col in data.columns: #normalizzo tutto tranne la quantità
         if col != 'Quantity':
             val = data[col].values
             if val.std() != 0:

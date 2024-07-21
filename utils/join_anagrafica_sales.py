@@ -23,14 +23,14 @@ path_dest = 'C:\\ORS\\Data\\sales_anagrafica.xlsx'
 anagrafica = pd.read_excel(path_anagrafica)
 sales = pd.read_csv(path_sales, names=['LocationId', 'ProductCode', 'CodiceColore', 'Year', 'Week', 'Quantity', 'NetValue'], header=None, sep=';')
 
-ref_images = img_ref(anagrafica['Stagione'], anagrafica['CodiceArticolo'], anagrafica['CodiceColore'])
-ref_join = join_ref(anagrafica['Stagione'], anagrafica['CodiceArticolo'])
+ref_images = img_ref(anagrafica['Stagione'], anagrafica['CodiceArticolo'], anagrafica['CodiceColore']) #crea la reference in formato nome immagine
+ref_join = join_ref(anagrafica['Stagione'], anagrafica['CodiceArticolo']) #modifica l'id per la join
 anagrafica = anagrafica.drop(['Stagione', 'CodiceArticolo', 'DescrizioneColore', 'AreaDescription', 
                       'CategoryDescription', 'SectorDescription', 'DepartmentDescription', 'WaveDescription',
                       'AstronomicalSeasonDescription', 'SalesSeasonBeginDate', 'SalesSeasonEndDate'], axis='columns')
 
 anagrafica['ProductCode'] = ref_join
-anagrafica['IdProdotto'] = ref_images
+anagrafica['IdProdotto'] = ref_images #sarà l'id prodotto che rimane
 
 sales = sales.drop(['NetValue', 'Year'], axis='columns')
 new_dataset = anagrafica.merge(sales, on=['ProductCode', 'CodiceColore'], how='inner')

@@ -16,6 +16,7 @@ class CustomDataset(Dataset):
         self.descriptions = descriptions
         self.target = tabular_data['Quantity'].values
         self.img_path = img_path
+        
         self.transform = transform
         self.target_transform = target_transform
 
@@ -25,19 +26,21 @@ class CustomDataset(Dataset):
     def __getitem__(self, idx):
         image = read_image(self.img_ref[idx], ImageReadMode.RGB)
         tabular_row = torch.from_numpy(self.tabular.iloc[idx].values).float()
-        description = dict()
+        
+        description = dict() #le descrizioni sono un dizionario con input_ids [1, 3, 2, 1, 6] e maschera [1, 1, 1, 0, 0]
         token_tensor = self.descriptions.get('input_ids')
         description['input_ids'] = token_tensor[idx]
         mask_tensor = self.descriptions.get('attention_mask')
         description['attention_mask'] = mask_tensor[idx]
-        label = self.target[idx]
+        
+        target = self.target[idx]
         
         if self.transform: 
             image = self.transform(image)
         if self.target_transform:
-            label = self.target_transform(label)
+            target = self.target_transform(target)
         
-        return image, tabular_row, description, label 
+        return image, tabular_row, description, target 
 
 def getDataset(references, tabular_data, descriptions, img_path):
     transform_img = v2.Compose([

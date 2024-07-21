@@ -14,6 +14,7 @@ class CustomDataset(Dataset):
         self.img_ref = data['prodcode'].values
         self.sales = data['qty'].values
         self.img_path = img_path
+        
         self.transform = transform
         self.target_transform = target_transform
 
@@ -23,14 +24,14 @@ class CustomDataset(Dataset):
     def __getitem__(self, idx):
         path = self.img_path + self.img_ref[idx]
         image = read_image(path, ImageReadMode.RGB)
-        label = self.sales[idx]
+        target = self.sales[idx]
         
         if self.transform: 
             image = self.transform(image)
         if self.target_transform:
-            label = self.target_transform(label)
+            target = self.target_transform(target)
         
-        return image, label 
+        return image, target 
 
 def getDataset(data, img_path):
     transform_img = v2.Compose([

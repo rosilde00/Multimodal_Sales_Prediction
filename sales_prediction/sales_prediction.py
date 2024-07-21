@@ -1,14 +1,19 @@
 import torch
 from torch import nn
+from torchvision.models.vision_transformer import vit_b_16
+from torchvision.models.vision_transformer import ViT_B_16_Weights
 from transformers import AutoModel
 
 class Network (nn.Module):
     def __init__(self):
         super().__init__()
-        self.img = nn.Sequential(
+        self.vit = vit_b_16(ViT_B_16_Weights.IMAGENET1K_V1)
+        self.dopo_vit= nn.Sequential(
             nn.Linear(1000, 512),
             nn.ReLU(),
-            nn.Linear(512, 256),
+            nn.Linear(512, 256), #pesi già calcolati
+        ) 
+        self.img = nn.Sequential(
             nn.ReLU(),
             nn.Linear(256, 100),
             nn.ReLU(),
@@ -16,7 +21,7 @@ class Network (nn.Module):
             nn.ReLU(),
             nn.Linear(50, 12),
             nn.ReLU(),
-        ) 
+        )
         self.tabular = nn.Sequential (
             nn.Linear(12, 12),
             nn.ReLU(),
@@ -40,11 +45,16 @@ class Network (nn.Module):
         )
         
     def forward(self, image, tab, desc):
-        emb_image = self.img(image)
+        vit = self.vit(image)
+        img = self.dopo_vit(vit)
+        emb_image = self.img(img)
+        
         emb_tab = self.tabular(tab)
+        
         bert_res = self.bert(**desc)
         last_hidden = bert_res.last_hidden_state[:,0,:]
         emb_desc = self.descriptions(last_hidden)
+        
         result = self.final(torch.cat((emb_image, emb_tab, emb_desc), 1))
         return result
     

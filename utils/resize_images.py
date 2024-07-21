@@ -1,6 +1,7 @@
 from PIL import Image
 import glob
-#resize delle immagini per il vit
+
+#resize delle immagini per il vit (224x224x3)
 baseheight = 224
 width = 224
 img_path = 'D:\\ORS\\Data\\Images\\*'

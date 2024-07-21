@@ -1,1 +1,3 @@
-Per il vit: usare pesi già esistenti e addestrare i livelli successivi da cui prendere l'embedding o non usare pesi pre-fatti e impararli?
+Togliere da SaleSeasonDescription l'anno?
+Granularità temporale?
+Dove salvare i pesi dell'embedding delle immagini? (A 512? A 256?)
