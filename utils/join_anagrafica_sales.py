@@ -16,9 +16,15 @@ def join_ref(season, catr):
         new_ref.append(r)
     return new_ref
 
-path_anagrafica = 'C:\\ORS\\Data\\Anagrafica.xlsx' 
-path_sales = 'C:\\ORS\\Data\\sales.csv'
-path_dest = 'C:\\ORS\\Data\\sales_anagrafica.xlsx'
+def delete_year(seasondesc):
+    seasondesc = list(seasondesc)
+    for i in range(0, len(seasondesc)):
+        seasondesc[i] = seasondesc[i][0:3]
+    return seasondesc
+
+path_anagrafica = 'C:\\Users\\GRVRLD00P\\Documents\\Progetto ORS\\Dati\\Anagrafica.xlsx' 
+path_sales = 'C:\\Users\\GRVRLD00P\\Documents\\Progetto ORS\\Dati\\sales.csv'
+path_dest = 'C:\\Users\\GRVRLD00P\\Documents\\Progetto ORS\\Dati\\sales_anagrafica.xlsx'
 
 anagrafica = pd.read_excel(path_anagrafica)
 sales = pd.read_csv(path_sales, names=['LocationId', 'ProductCode', 'CodiceColore', 'Year', 'Week', 'Quantity', 'NetValue'], header=None, sep=';')
@@ -31,6 +37,7 @@ anagrafica = anagrafica.drop(['Stagione', 'CodiceArticolo', 'DescrizioneColore',
 
 anagrafica['ProductCode'] = ref_join
 anagrafica['IdProdotto'] = ref_images #sarà l'id prodotto che rimane
+anagrafica['SalesSeasonDescription'] = delete_year(anagrafica['SalesSeasonDescription'])
 
 sales = sales.drop(['NetValue', 'Year'], axis='columns')
 new_dataset = anagrafica.merge(sales, on=['ProductCode', 'CodiceColore'], how='inner')

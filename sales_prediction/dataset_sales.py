@@ -24,7 +24,7 @@ class CustomDataset(Dataset):
         return len(self.img_ref)
     
     def __getitem__(self, idx):
-        image = read_image(self.img_ref[idx], ImageReadMode.RGB)
+        image = read_image(self.img_path + self.img_ref[idx], ImageReadMode.RGB)
         tabular_row = torch.from_numpy(self.tabular.iloc[idx].values).float()
         
         description = dict() #le descrizioni sono un dizionario con input_ids [1, 3, 2, 1, 6] e maschera [1, 1, 1, 0, 0]
@@ -50,8 +50,8 @@ def getDataset(references, tabular_data, descriptions, img_path):
     
     dataset = CustomDataset(references, tabular_data, descriptions, img_path, transform_img, None)
     
-    splitted_dataset = random_split(dataset, [0.6, 0.3, 0.1])
-    train_dataloader = DataLoader(splitted_dataset[0], batch_size=1)
-    validation_dataloader = DataLoader(splitted_dataset[1], batch_size=1)
-    test_dataloader = DataLoader(splitted_dataset[2], batch_size=1)
-    return train_dataloader, validation_dataloader, test_dataloader
+    splitted_dataset = random_split(dataset, [0.7, 0.3])
+    train_dataloader = DataLoader(splitted_dataset[0], batch_size=64)
+    validation_dataloader = DataLoader(splitted_dataset[1], batch_size=64)
+    #test_dataloader = DataLoader(splitted_dataset[2], batch_size=64)
+    return train_dataloader, validation_dataloader

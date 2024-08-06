@@ -1,36 +1,48 @@
 from sales_prediction.preproc_tabular import get_tabular
 from sales_prediction.dataset_sales import getDataset
-import sales_prediction.sales_prediction as sales_prediction
-import torch
+import sales_prediction.sales_prediction as sp
+from torch.optim.adamw import AdamW
 from torch import nn
+import torch
+import os
 
+img_path = 'C:\\Users\\GRVRLD00P\\Documents\\Progetto ORS\\Dati\\ResizedImages\\'
+tab_path = 'C:\\Users\\GRVRLD00P\\Documents\\Progetto ORS\\Dati\\sales_anagrafica_final.csv'
 
-IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406) #presi da timm
-IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
+data, references, descriptions = get_tabular(tab_path)
+train, val = getDataset(references, data, descriptions, img_path)
 
-img_path = 'D:\\ORS\\Data\\ResizedImages\\'
-tab_path = 'D:\\ORS\\Data\\sales_anagrafica_final.xlxs'
-target_path = 'ciao'
+device = (
+    "cuda"
+    if torch.cuda.is_available()
+    else "mps"
+    if torch.backends.mps.is_available()
+    else "cpu"
+)
+print(f"Sto usando {device}")
 
-data, descriptions, references = get_tabular(img_path, tab_path)
-train, val, test = getDataset(references, data, descriptions, target_path)
+modello = sp.create_model().to(device)
 
-modello = sales_prediction.create_model()
+batch_size = 64
+epochs = 15
+criterion = nn.MSELoss()
+optimizer = AdamW(modello.parameters(), lr=1e-3) 
+early_stop = sp.EarlyStopping(5, 0)
 
-learning_rate = 1e-3
-batch_size = 1
-epochs = 2
-loss_fn = nn.MSELoss()
-optimizer = torch.optim.SGD(modello.parameters(), lr=learning_rate) 
-early_stop = 3
-
-stable_loss = 0
-prec_loss = 20000
 for t in range(epochs):
     print(f"Epoch {t+1}\n-------------------------------")
-    sales_prediction.train_loop(train, modello, loss_fn, optimizer, 1)
-    val_loss = sales_prediction.validation_loop(val, modello, loss_fn)
-    stop, stable_loss = sales_prediction.early_stopping(val_loss, prec_loss, stable_loss, early_stop)
-    if stop:
+    sp.train_loop(train, modello, criterion, optimizer, batch_size, device)
+    val_loss = sp.validation_loop(val, modello, criterion)
+    early_stp = early_stop(val_loss)
+    if early_stp:
+        print('Early Stop attivato.')
         break
+    
 print("Done!")
+
+cartella = input("Inserire il nome della cartella in cui salvare i pesi.")
+os.makedirs(cartella)
+descrizione = input("Inserire la descrizione dei pesi salvati.")
+with open(f'.\\results\\{cartella}\\descrizione.txt', 'w') as file:
+    file.write(descrizione)
+torch.save(modello, f'.\\results\\{cartella}\\weights.pth')
