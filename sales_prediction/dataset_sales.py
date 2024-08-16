@@ -42,7 +42,7 @@ class CustomDataset(Dataset):
         
         return image, tabular_row, description, target 
 
-def getDataset(references, tabular_data, descriptions, img_path):
+def getDataset(references, tabular_data, descriptions, img_path, batch_size):
     transform_img = v2.Compose([
         v2.ToDtype(torch.float32, scale=True),
         v2.Normalize(IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD)
@@ -53,7 +53,7 @@ def getDataset(references, tabular_data, descriptions, img_path):
     partial, _ = random_split(dataset, [0.10, 0.90])
     
     splitted_dataset = random_split(partial, [0.7, 0.3])
-    train_dataloader = DataLoader(splitted_dataset[0], batch_size=64)
-    validation_dataloader = DataLoader(splitted_dataset[1], batch_size=64)
-    #test_dataloader = DataLoader(splitted_dataset[2], batch_size=64)
+    train_dataloader = DataLoader(splitted_dataset[0], batch_size=batch_size)
+    validation_dataloader = DataLoader(splitted_dataset[1], batch_size=batch_size)
+    #test_dataloader = DataLoader(splitted_dataset[2], batch_size=batch_size)
     return train_dataloader, validation_dataloader
