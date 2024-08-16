@@ -3,10 +3,15 @@ from torch import nn
 from torchvision.models.vision_transformer import vit_b_16
 from torchvision.models.vision_transformer import ViT_B_16_Weights
 from transformers import AutoModel
+from sklearn.metrics import mean_absolute_error, r2_score
 
 class Network (nn.Module):
-    def __init__(self):
+    def __init__(self, aggregated):
         super().__init__()
+        
+        n_neuroni = (12 if aggregated == 0
+                     else 11)
+        
         self.vit = vit_b_16(ViT_B_16_Weights.IMAGENET1K_V1)
         
         for param in self.vit.parameters():
@@ -28,14 +33,14 @@ class Network (nn.Module):
             nn.Linear(100, 50),
             nn.BatchNorm1d(50),
             nn.ReLU(),
-            nn.Linear(50, 12),
-            nn.BatchNorm1d(12),
+            nn.Linear(50, n_neuroni),
+            nn.BatchNorm1d(n_neuroni),
             nn.ReLU(),
         )
         
         self.tabular = nn.Sequential (
-            nn.Linear(12, 12),
-            nn.BatchNorm1d(12),
+            nn.Linear(n_neuroni, n_neuroni),
+            nn.BatchNorm1d(n_neuroni),
             nn.ReLU(),
         )
         
@@ -51,13 +56,15 @@ class Network (nn.Module):
             nn.Linear(100, 50),
             nn.BatchNorm1d(50),
             nn.ReLU(),
-            nn.Linear(50, 12),
-            nn.BatchNorm1d(12),
+            nn.Linear(50, n_neuroni),
+            nn.BatchNorm1d(n_neuroni),
             nn.ReLU(),
         )
         
+        n_neuroni *= 3
+        
         self.final = nn.Sequential(
-            nn.Linear(36, 10),
+            nn.Linear(n_neuroni, 10),
             nn.BatchNorm1d(10),
             nn.ReLU(),
             nn.Linear(10, 1),
@@ -77,8 +84,8 @@ class Network (nn.Module):
         
         return result
     
-def create_model():
-    return Network()
+def create_model(aggregated):
+    return Network(aggregated)
 
 def train_loop(dataloader, model, loss_fn, optimizer, batch_size, device):
     size = len(dataloader.dataset) #quanti elementi nel dataset
@@ -93,6 +100,7 @@ def train_loop(dataloader, model, loss_fn, optimizer, batch_size, device):
         
         pred = model(img, tab, desc_tensor)
         loss = loss_fn(pred.squeeze(), y.float())
+        
         # Backpropagation
         loss.backward()
         optimizer.step()
@@ -100,22 +108,36 @@ def train_loop(dataloader, model, loss_fn, optimizer, batch_size, device):
 
         if batch % 100 == 0:
             loss, current = loss.item(), batch * batch_size + len(tab)
-            print(f"Loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
+            print(f"MSE: {loss:>7f}  [{current:>5d}/{size:>5d}]")
 
 
-def validation_loop(dataloader, model, loss_fn):
+def validation_loop(dataloader, model, loss_fn, device):
     model.eval() #modalità valutazione, i pesi sono frizzati
     num_batches = len(dataloader)
-    val_loss = 0
+    avg_mse = 0
+    avg_mae = 0
+    avg_r2 = 0
 
     with torch.no_grad(): #si assicura che il gradiente qui non venga calcolato
         for img, tab, desc, y in dataloader:
-            pred = model(img, tab, desc)
-            val_loss += loss_fn(pred.squeeze(), y.float()).item()
+            img, tab, y = img.to(device), tab.to(device), y.to(device)
+        
+            bert = AutoModel.from_pretrained("distilbert-base-multilingual-cased")
+            bert_res = bert(**desc)
+            desc_tensor = bert_res.last_hidden_state[:,0,:]
+            desc_tensor = desc_tensor.to(device)
+        
+            pred = model(img, tab, desc_tensor)
+            avg_mse += loss_fn(pred.squeeze(), y.float()).item()
+            avg_mae += mean_absolute_error(y.cpu().detach().numpy(), pred.cpu().detach().numpy())
+            avg_r2 += r2_score(y.cpu().detach().numpy(), pred.cpu().detach().numpy())
 
-    val_loss /= num_batches
-    print(f"Validation Error: \n Avg loss: {val_loss:>8f} \n")
-    return val_loss
+    avg_mse /= num_batches
+    avg_mae /= num_batches
+    avg_r2 /= num_batches
+    
+    print(f"Validation Error: \n Avg MSE: {avg_mse:>8f} \n Avg MAE: {avg_mae:>8f} \n Avg R2: {avg_r2}\n")
+    return avg_mse, avg_mae, avg_r2
 
 class EarlyStopping:
     def __init__(self, patience, min_delta):
