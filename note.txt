@@ -24,3 +24,5 @@ step di processing dei dati:
 - replicare gli id delle vendite aggregate per le tre modalità dell'immagine. Prendere le immagini delle sales -> final
 - replicare gli id delle vendite settimanali (sales pred) per le tre modalità dell'immagine -> final
 - fare la resize delle immagini per il vit
+
+learning rate basso
