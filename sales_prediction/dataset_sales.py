@@ -50,10 +50,10 @@ def getDataset(references, tabular_data, descriptions, img_path, batch_size):
     
     dataset = CustomDataset(references, tabular_data, descriptions, img_path, transform_img, None)
     
-    partial, _ = random_split(dataset, [0.08, 0.92])
+    partial, _ = random_split(dataset, [0.04, 0.96])
     
     splitted_dataset = random_split(partial, [0.7, 0.3])
     train_dataloader = DataLoader(splitted_dataset[0], batch_size=batch_size)
     validation_dataloader = DataLoader(splitted_dataset[1], batch_size=batch_size)
-    #test_dataloader = DataLoader(splitted_dataset[2], batch_size=batch_size)
+
     return train_dataloader, validation_dataloader
