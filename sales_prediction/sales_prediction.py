@@ -158,4 +158,5 @@ class EarlyStopping:
         else:
             self.best_score = score
             self.count = 0
+        return self.early_stop
         
