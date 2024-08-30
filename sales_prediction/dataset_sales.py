@@ -9,12 +9,12 @@ from torchvision.io import ImageReadMode
 IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406) #presi da timm
 IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
 
-class CustomDataset(Dataset):
-    def __init__(self, references, tabular_data, descriptions, img_path, transform=None, target_transform=None):
+class SalesDataset(Dataset):
+    def __init__(self, references, tabular_data, descriptions, img_path, target, transform=None, target_transform=None):
         self.img_ref = references 
         self.tabular = tabular_data
         self.descriptions = descriptions
-        self.target = tabular_data['Quantity'].values
+        self.target = target
         self.img_path = img_path
         
         self.transform = transform
@@ -42,15 +42,15 @@ class CustomDataset(Dataset):
         
         return image, tabular_row, description, target 
 
-def getDataset(references, tabular_data, descriptions, img_path, batch_size):
+def getDataset(references, tabular_data, descriptions, target, img_path, batch_size, proportion):
     transform_img = v2.Compose([
         v2.ToDtype(torch.float32, scale=True),
         v2.Normalize(IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD)
     ])
     
-    dataset = CustomDataset(references, tabular_data, descriptions, img_path, transform_img, None)
+    dataset = SalesDataset(references, tabular_data, descriptions, img_path, target, transform_img, None)
     
-    partial, _ = random_split(dataset, [0.08, 0.92])
+    partial, _ = random_split(dataset, [proportion, 1 - proportion])
     
     splitted_dataset = random_split(partial, [0.7, 0.3])
     train_dataloader = DataLoader(splitted_dataset[0], batch_size=batch_size)

@@ -9,8 +9,8 @@ class Network (nn.Module):
     def __init__(self, aggregated):
         super().__init__()
         
-        n_neuroni = (12 if aggregated == 0
-                     else 11)
+        n_neuroni = (11 if aggregated == 0
+                     else 10)
         
         self.vit = vit_b_16(ViT_B_16_Weights.IMAGENET1K_V1)
         
@@ -64,10 +64,10 @@ class Network (nn.Module):
         n_neuroni *= 3
         
         self.final = nn.Sequential(
-            nn.Linear(n_neuroni, 10),
-            nn.BatchNorm1d(10),
+            nn.Linear(n_neuroni, 8),
+            nn.BatchNorm1d(8),
             nn.ReLU(),
-            nn.Linear(10, 1),
+            nn.Linear(8, 1),
             nn.BatchNorm1d(1),
             nn.ReLU()
         )

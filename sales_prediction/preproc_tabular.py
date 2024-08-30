@@ -4,16 +4,18 @@ import glob
 from transformers import AutoTokenizer
 
 def get_tabular(tabular_path):
-    data, references, descriptions = get_data(tabular_path)
+    data, references, descriptions, target = get_data(tabular_path)
     tokenized_desc = word_embedding(descriptions)
-    return data, references, tokenized_desc
+    return data, references, tokenized_desc, target
 
 def get_data(path):
     data = pd.read_csv(path)
     description = data['Descrizione'].to_list()
     description = list(map(lambda d: d.lower(), description))
     references = data['IdProdotto'].values
-    data = data.drop(columns = ['Descrizione', 'IdProdotto'], axis='columns')
+    target = data['Quantity'].values
+    
+    data = data.drop(columns = ['Descrizione', 'IdProdotto', 'Quantity'], axis='columns')
   
     columns = ['CodiceColore', 'PianoTaglia', 'WaveCode', 'AstronomicalSeasonExternalID', 'SalesSeasonDescription']
     for col in columns:
@@ -26,8 +28,8 @@ def get_data(path):
             if val.std() != 0:
                 normalized_labels = (val - val.mean())/val.std()
                 data[col] = normalized_labels
-    
-    return data, references, description
+
+    return data, references, description, target
 
 def word_embedding(description):
     tokenizer = AutoTokenizer.from_pretrained("distilbert-base-multilingual-cased")
