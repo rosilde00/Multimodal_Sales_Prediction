@@ -29,7 +29,7 @@ class Network (nn.Module):
             nn.Linear(256, 100),
             nn.BatchNorm1d(100),
             nn.ReLU(),
-            nn.Dropout(0.5),
+            nn.Dropout(0.4),
             nn.Linear(100, 50),
             nn.BatchNorm1d(50),
             nn.ReLU(),
@@ -52,7 +52,7 @@ class Network (nn.Module):
             nn.Linear(300, 100),
             nn.BatchNorm1d(100),
             nn.ReLU(),
-            nn.Dropout(0.5),
+            nn.Dropout(0.4),
             nn.Linear(100, 50),
             nn.BatchNorm1d(50),
             nn.ReLU(),
@@ -114,9 +114,9 @@ def train_loop(dataloader, model, loss_fn, optimizer, batch_size, device):
 def validation_loop(dataloader, model, loss_fn, device):
     model.eval() #modalità valutazione, i pesi sono frizzati
     num_batches = len(dataloader)
+    mae = nn.L1Loss()
     avg_mse = 0
     avg_mae = 0
-    avg_r2 = 0
 
     with torch.no_grad(): #si assicura che il gradiente qui non venga calcolato
         for img, tab, desc, y in dataloader:
@@ -129,15 +129,13 @@ def validation_loop(dataloader, model, loss_fn, device):
         
             pred = model(img, tab, desc_tensor)
             avg_mse += loss_fn(pred.squeeze(), y.float()).item()
-            avg_mae += mean_absolute_error(y.cpu().detach().numpy(), pred.cpu().detach().numpy())
-            avg_r2 += r2_score(y.cpu().detach().numpy(), pred.cpu().detach().numpy())
+            avg_mae += mae(pred.squeeze(), y.float()).item()
 
     avg_mse /= num_batches
     avg_mae /= num_batches
-    avg_r2 /= num_batches
     
-    print(f"Validation Error: \n Avg MSE: {avg_mse:>8f} \n Avg MAE: {avg_mae:>8f} \n Avg R2: {avg_r2}\n")
-    return avg_mse, avg_mae, avg_r2
+    print(f"Validation Error: \n Avg MSE: {avg_mse:>8f} \n Avg MAE: {avg_mae:>8f} \n")
+    return avg_mse, avg_mae
 
 class EarlyStopping:
     def __init__(self, patience, min_delta):
