@@ -1,6 +1,7 @@
 from torchvision.io import read_image
 from torch.utils.data import Dataset
 import torch
+from transformers import AutoModel
 from torch.utils.data import DataLoader
 from torch.utils.data import random_split
 from torchvision.transforms import v2
@@ -25,13 +26,10 @@ class SalesDataset(Dataset):
     
     def __getitem__(self, idx):
         image = read_image(self.img_path + self.img_ref[idx], ImageReadMode.RGB)
-        tabular_row = torch.from_numpy(self.tabular.iloc[idx].values).float()
         
-        description = dict() #le descrizioni sono un dizionario con input_ids [1, 3, 2, 1, 6] e maschera [1, 1, 1, 0, 0]
-        token_tensor = self.descriptions.get('input_ids')
-        description['input_ids'] = token_tensor[idx]
-        mask_tensor = self.descriptions.get('attention_mask')
-        description['attention_mask'] = mask_tensor[idx]
+        tabular_row = torch.from_numpy(self.tabular.iloc[idx].values).float()
+
+        desc_tensor = self.descriptions[self.img_ref[idx]]
         
         target = self.target[idx]
         
@@ -40,7 +38,7 @@ class SalesDataset(Dataset):
         if self.target_transform:
             target = self.target_transform(target)
         
-        return image, tabular_row, description, target 
+        return image, tabular_row, desc_tensor, target 
 
 def getDataset(references, tabular_data, descriptions, target, img_path, batch_size, proportion):
     transform_img = v2.Compose([
