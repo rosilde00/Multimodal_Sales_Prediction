@@ -71,7 +71,7 @@ def validation_loop(dataloader, model, loss_fn, device):
     model.eval() 
     num_batches = len(dataloader)
     mae = nn.L1Loss()
-    avg_mse, avg_mae, avg_r2 = 0, 0, 0
+    avg_mse, avg_mae= 0, 0
     label, prediction = np.array([]), np.array([])
 
     with torch.no_grad(): 
@@ -83,21 +83,19 @@ def validation_loop(dataloader, model, loss_fn, device):
             
             avg_mse += loss_fn(pred.squeeze(), y.float()).item()
             avg_mae += mae(pred.squeeze(), y.float()).item()
-            avg_r2 += r2_score(y_np, pred_np)
             
             label = np.append(y_np, label)
             prediction = np.append(pred_np, prediction)
 
     avg_mse /= num_batches
     avg_mae /= num_batches
-    avg_r2 /= num_batches
-    
+    r2 = r2_score(label, prediction)
     bias = np.mean(prediction - label)
     
-    print(f"Validation Error: \n Avg MSE: {avg_mse:>8f} \n Avg MAE: {avg_mae:>8f} \n Avg R2: {avg_r2:>8f}\n" + 
+    print(f"Validation Error: \n Avg MSE: {avg_mse:>8f} \n Avg MAE: {avg_mae:>8f} \n R2: {r2:>8f}\n" + 
           f" Bias: {bias:>8f}\n")
     
-    return avg_mse, avg_mae, avg_r2, bias
+    return avg_mse, avg_mae, r2, bias
 
 
 def getDataset(tabular_data, target, batch_size, proportion):
