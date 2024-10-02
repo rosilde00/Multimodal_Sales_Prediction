@@ -2,19 +2,18 @@ import torch
 from torch import nn
 from torchvision.models.vision_transformer import vit_b_16
 from torchvision.models.vision_transformer import ViT_B_16_Weights
+from torchvision.models.vision_transformer import vit_b_32
+from torchvision.models.vision_transformer import ViT_B_32_Weights
+from torchvision.models.vision_transformer import vit_l_32
+from torchvision.models.vision_transformer import ViT_L_32_Weights
 import numpy as np
 from sklearn.metrics import r2_score
 
 class Network (nn.Module):
-    def __init__(self, aggregated, shop):
+    def __init__(self, n_neuroni):
         super().__init__()
         
-        n_neuroni = (11 if aggregated == 0
-                     else 10)
-        if shop == 0:
-            n_neuroni -= 1
-        
-        self.vit = vit_b_16(ViT_B_16_Weights.IMAGENET1K_V1)
+        self.vit = vit_b_16(ViT_B_16_Weights.IMAGENET1K_SWAG_E2E_V1)
         
         for param in self.vit.parameters():
             param.requires_grad = False
@@ -71,8 +70,8 @@ class Network (nn.Module):
         
         return result
     
-def create_model(aggregated, shop):
-    return Network(aggregated, shop)
+def create_model(n_neuroni):
+    return Network(n_neuroni)
 
 def train_loop(dataloader, model, loss_fn, optimizer, batch_size, device):
     size = len(dataloader.dataset) 

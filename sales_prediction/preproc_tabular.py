@@ -14,8 +14,8 @@ def get_data(path):
     target = data['Quantity'].values
     
     data = data.drop(columns = ['Descrizione', 'IdProdotto', 'Quantity'], axis='columns')
-  
     columns = ['CodiceColore', 'PianoTaglia', 'WaveCode', 'AstronomicalSeasonExternalID', 'SalesSeasonDescription']
+
     for col in columns:
         encoded_labels, _ = pd.factorize(data[col])
         data[col] = encoded_labels
