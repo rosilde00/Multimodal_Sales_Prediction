@@ -2,21 +2,12 @@ import torch
 from torch import nn
 from torchvision.models.vision_transformer import vit_b_16
 from torchvision.models.vision_transformer import ViT_B_16_Weights
-from torchvision.models.vision_transformer import vit_b_32
-from torchvision.models.vision_transformer import ViT_B_32_Weights
-from torchvision.models.vision_transformer import vit_l_32
-from torchvision.models.vision_transformer import ViT_L_32_Weights
 import numpy as np
 from sklearn.metrics import r2_score
 
 class Network (nn.Module):
     def __init__(self, n_neuroni):
-        super().__init__()
-        
-        self.vit = vit_b_16(ViT_B_16_Weights.IMAGENET1K_SWAG_E2E_V1)
-        
-        for param in self.vit.parameters():
-            param.requires_grad = False
+        super().__init__()  
         self.image = nn.Sequential(
             nn.Linear(1000, 512),
             nn.ReLU(),
@@ -59,11 +50,8 @@ class Network (nn.Module):
         )
         
     def forward(self, image, tab, desc):
-        vit = self.vit(image)
-        emb_image = self.image(vit)
-        
+        emb_image = self.image(image)
         emb_tab = self.tabular(tab)
-        
         emb_desc = self.description(desc)
        
         result = self.final(torch.cat((emb_image, emb_tab, emb_desc), 1))

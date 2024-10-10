@@ -1,14 +1,13 @@
 import pandas as pd
-from transformers import AutoTokenizer
 import torch
 
-def get_tabular(tabular_path, desc_path):
-    data, references, target = get_data(tabular_path)
-    #tokenized_desc = word_embedding(descriptions)
+def get_data(tabular_path, desc_path, img_path):
+    data, references, target = get_tabular(tabular_path)
     descrizioni = torch.load(desc_path)
-    return data, references, descrizioni, target
+    immagini = torch.load(img_path)
+    return data, references, immagini, descrizioni, target
 
-def get_data(path):
+def get_tabular(path):
     data = pd.read_csv(path)
     references = data['IdProdotto'].values
     target = data['Quantity'].values
@@ -28,8 +27,3 @@ def get_data(path):
                 data[col] = normalized_labels
 
     return data, references, target
-
-def word_embedding(description):
-    tokenizer = AutoTokenizer.from_pretrained("distilbert-base-multilingual-cased")
-    tokenized_desc = tokenizer(description, padding = True, truncation = True, add_special_tokens = True, return_tensors="pt")
-    return tokenized_desc.data

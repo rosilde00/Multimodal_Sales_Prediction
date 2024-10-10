@@ -1,7 +1,6 @@
 from torchvision.io import read_image
 from torch.utils.data import Dataset
 import torch
-from transformers import AutoModel
 from torch.utils.data import DataLoader
 from torch.utils.data import random_split
 from torchvision.transforms import v2
@@ -11,42 +10,29 @@ IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406) #presi da timm
 IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
 
 class SalesDataset(Dataset):
-    def __init__(self, references, tabular_data, descriptions, img_path, target, transform=None, target_transform=None):
-        self.img_ref = references 
+    def __init__(self, references, tabular_data, images, descriptions, target):
+        self.references = references 
         self.tabular = tabular_data
+        self.images = images
         self.descriptions = descriptions
         self.target = target
-        self.img_path = img_path
-        
-        self.transform = transform
-        self.target_transform = target_transform
 
     def __len__(self):
-        return len(self.img_ref)
+        return len(self.references)
     
     def __getitem__(self, idx):
-        image = read_image(self.img_path + self.img_ref[idx], ImageReadMode.RGB)
+        img_tensor = self.images[self.references[idx]]
         
         tabular_row = torch.from_numpy(self.tabular.iloc[idx].values).float()
 
-        desc_tensor = self.descriptions[self.img_ref[idx]]
+        desc_tensor = self.descriptions[self.references[idx]]
         
         target = self.target[idx]
         
-        if self.transform: 
-            image = self.transform(image)
-        if self.target_transform:
-            target = self.target_transform(target)
-        
-        return image, tabular_row, desc_tensor, target 
+        return img_tensor, tabular_row, desc_tensor, target 
 
-def getDataset(references, tabular_data, descriptions, target, img_path, batch_size, proportion):
-    transform_img = v2.Compose([
-        v2.ToDtype(torch.float32, scale=True),
-        v2.Normalize(IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD)
-    ])
-    
-    dataset = SalesDataset(references, tabular_data, descriptions, img_path, target, transform_img, None)
+def getDataset(references, tabular_data, images, descriptions, target, batch_size, proportion):
+    dataset = SalesDataset(references, tabular_data, images, descriptions, target)
     
     partial, _ = random_split(dataset, [proportion, 1 - proportion])
     
