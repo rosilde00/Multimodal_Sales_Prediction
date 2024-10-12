@@ -108,9 +108,6 @@ def validation_loop(dataloader, model, loss_fn, device):
     r2 = r2_score(label, prediction)
     bias = np.mean(prediction - label)
     
-    print(f"Validation Error: \n Avg MSE: {avg_mse:>8f} \n Avg MAE: {avg_mae:>8f} \n R2: {r2:>8f}\n" + 
-          f" Bias: {bias:>8f}\n")
-    
     return avg_mse, avg_mae, r2, bias
 
 class EarlyStopping:
