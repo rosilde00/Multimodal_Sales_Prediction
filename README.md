@@ -1,4 +1,4 @@
-Progetto di tesi magistrale.
+Progetto di tesi magistrale, tramite il framework Pytorch.
 
 Per un’azienda, la capacità di prevedere accuratamente le vendite è fondamentale per ottimizzare
 la gestione delle risorse e ridurre al minimo gli sprechi. Prevedere la domanda futura permette di
